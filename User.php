@@ -19,11 +19,30 @@ class User {
     }
 
     public function getAll() {
-        $query = "SELECT * FROM " . $this->table . " ORDER BY id DESC";
+        $query = "SELECT u.*, s.status_name 
+                  FROM " . $this->table . " u
+                  LEFT JOIN approval_statuses s ON u.status = s.id
+                  ORDER BY u.id ASC";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt;
     }
+
+    public function changeStatus($id, $newStatus) {
+        $query = "UPDATE " . $this->table . " SET status = :status WHERE id = :id";
+        $stmt = $this->conn->prepare($query);
+    
+        // Bind parameters
+        $stmt->bindParam(':status', $newStatus);
+        $stmt->bindParam(':id', $id);
+    
+        if ($stmt->execute()) {
+            return true;
+        }
+        return false;
+    }
+    
+    
 
     public function getSingle($id) {
         $query = "SELECT * FROM " . $this->table . " WHERE id = :id LIMIT 1";
